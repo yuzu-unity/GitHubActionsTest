@@ -6,6 +6,8 @@ on:
 
 jobs:
   rebase_and_force_push:
+    if: github.event_name == 'issue_comment' && contains(github.event.comment.html_url, '/pull/') && startsWith(github.event.comment.body, '/rebase onto from ')
+
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -18,10 +20,11 @@ jobs:
         run: |
           body="${{ github.event.comment.body }}"
           echo $body
-          branchName=$(echo "${body}" | sed 's@/rebase onto by @@')
+          branchName=$(echo "${body}" | sed 's@/rebase onto from @@')
           echo $branchName
           echo "::set-output name=branchName::$branchName"
           PR=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" ${{ github.event.issue.pull_request.url }})
+          echo $PR
           echo "::set-output name=headBranchName::$(echo $PR | jq -r '.head.ref')"
           echo "::set-output name=baseBranchName::$(echo $PR | jq -r '.base.ref')"
 
