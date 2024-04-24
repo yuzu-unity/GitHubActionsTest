@@ -33,6 +33,8 @@ jobs:
           
           echo "Fetch Start"
           git fetch origin
+          echo "checkout Start"
+          git checkout ${headBranch}
           echo "Rebase Start"
           git $command
           echo "Push Start"
