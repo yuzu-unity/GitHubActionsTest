@@ -51,26 +51,4 @@ jobs:
           git $command
           echo "Push Start"
           git push --force origin ${headBranch}
-
-          exit 0
-      
-      - name: Handle success
-        if: ${{ success() }}
-        uses: actions/github-script@v5
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const issueComment = context.issue.comment;
-            const response = "Success ${{ github.event.comment.body }}";
-            await github.issues.createComment({...issueComment, body: response});
-
-      - name: Handle failure
-        if: ${{ failure() }}
-        uses: actions/github-script@v5
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const issueComment = context.issue.comment;
-            const response = "Failed ${{ github.event.comment.body }}";
-            await github.issues.createComment({...issueComment, body: response});
-      
+          echo "Success!!"
