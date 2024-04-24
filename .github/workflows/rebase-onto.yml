@@ -15,11 +15,6 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - name: Check if comment contains rebase onto command
-        id: check
-        run: |
-          
-
       - name: Checkout repository
         uses: actions/checkout@v2
 
@@ -28,7 +23,7 @@ jobs:
           body="${{ github.event.comment.body }}"
           command=$(echo "${body}" | sed 's@/@@')
           headBarnch= $(echo "${body}" | awk '{print $NF}')
-          $headBranch
+          echo $headBranch
           
           echo "Fetch Start"
           git fetch origin
