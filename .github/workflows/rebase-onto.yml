@@ -6,6 +6,8 @@ on:
 
 jobs:
   rebase_and_force_push:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
