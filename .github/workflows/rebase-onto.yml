@@ -11,7 +11,7 @@ jobs:
       - name: Check if comment contains rebase onto command
         id: check
         run: |
-          body=$(jq -r '.comment.body' "$GITHUB_EVENT_PATH")
+          body="${{ github.event.comment.body }}"
           branchName=$(echo "$body" | grep -oP '/rebase onto by \K\S+')
           if [ -n "$branchName" ]; then
             git ls-remote origin "$branchName" >/dev/null 2>&1
