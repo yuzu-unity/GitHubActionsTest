@@ -27,7 +27,7 @@ jobs:
           echo $command
 
           echo "Get HeadBranch"
-          headBranch = $(echo "${body}" | awk '{print $NF}')
+          headBranch=$(echo "${body}" | awk '{print $NF}')
           
           echo $headBranch
           
