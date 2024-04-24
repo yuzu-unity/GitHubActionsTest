@@ -35,10 +35,17 @@ jobs:
           if [ -n "$branchName" ]; then
             git ls-remote origin "$branchName" >/dev/null 2>&1
             if [ $? -eq 0 ]; then
+              base=${{ github.event.issue.pull_request.base.ref }}
+              echo $base
+              head=${{ github.event.issue.pull_request.head.ref }}
+              echo $head
+
+              echo "Fetch Start"
+              git fetch origin
               echo "Rebase Start"
-              git rebase --onto ${{ github.event.issue.pull_request.base.ref }} ${branchName} ${{ github.event.issue.pull_request.head.ref }}
+              git rebase --onto ${base} ${branchName} ${head}
               echo "Push Start"
-              git push ${{ github.event.issue.pull_request.head.ref }} --force
+              git push ${head} --force
             else
               echo "Branch $branchName does not exist."
               exit 1
