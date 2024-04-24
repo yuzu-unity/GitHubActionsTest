@@ -18,7 +18,7 @@ jobs:
             const match = body.match(/\/rebase onto by (\S+)/);
             if (match !== null) {
               const branchName = match[1];
-              console.log('Branch name:', branchName);
+              echo "::set-output name=branchName::$(echo $branchName)"
               return branchName;
             }
             return false;
