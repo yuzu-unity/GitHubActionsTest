@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
+
     steps:
       - name: Check if comment contains rebase onto command
         id: check
@@ -35,6 +35,7 @@ jobs:
             if [ $? -eq 0 ]; then
               echo "Rebase Start"
               git rebase --onto ${{ github.event.issue.pull_request.base.ref }} ${branchName} ${{ github.event.issue.pull_request.head.ref }}
+              echo "Push Start"
               git push ${{ github.event.issue.pull_request.head.ref }} --force
             else
               echo "Branch $branchName does not exist."
