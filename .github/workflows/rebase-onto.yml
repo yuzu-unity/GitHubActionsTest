@@ -15,15 +15,8 @@ jobs:
           echo $body
           branchName=$(echo "${body}" | sed 's@/rebase onto by @@')
           echo $branchName
-          if [ -n "$branchName" ]; then
-            git ls-remote origin "$branchName" >/dev/null 2>&1
-            if [ $? -eq 0 ]; then
-              echo "::set-output name=branchName::$branchName"
-            else
-              echo "Branch $branchName does not exist."
-              exit 1
-            fi
-          fi
+          echo "::set-output name=branchName::$branchName"
+          
 
       - name: Checkout repository
         if: ${{ steps.check.outputs.branchName != '' }}
@@ -32,6 +25,15 @@ jobs:
       - name: Rebase onto specified branch and force push
         if: ${{ steps.check.outputs.branchName != '' }}
         run: |
-          git fetch origin
-          git rebase --onto ${{ github.event.issue.pull_request.base.ref }} ${{ steps.check.outputs.branchName }} ${{ github.event.issue.pull_request.head.ref }}
-          git push origin ${{ github.event.issue.pull_request.head.ref }} --force
+          if [ -n "$branchName" ]; then
+            git ls-remote origin "$branchName" >/dev/null 2>&1
+            if [ $? -eq 0 ]; then
+              echo "Rebase Start"
+              git rebase --onto ${{ github.event.issue.pull_request.base.ref }} ${{ steps.check.outputs.branchName }} ${{ github.event.issue.pull_request.head.ref }}
+              git push ${{ github.event.issue.pull_request.head.ref }} --force
+            else
+              echo "Branch $branchName does not exist."
+              exit 1
+            fi
+          fi
+          
