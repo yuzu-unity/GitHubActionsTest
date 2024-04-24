@@ -20,6 +20,10 @@ jobs:
 
       - name: Rebase onto specified branch and force push
         run: |
+
+          git config --global user.name "githubactions"
+          git config --global user.email "githubactions@example.com"
+
           body="${{ github.event.comment.body }}"
           echo $body
           echo "Get Command"
