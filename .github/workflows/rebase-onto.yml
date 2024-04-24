@@ -21,8 +21,14 @@ jobs:
       - name: Rebase onto specified branch and force push
         run: |
           body="${{ github.event.comment.body }}"
+          echo $body
+          echo "Get Command"
           command=$(echo "${body}" | sed 's@/@@')
+          echo $command
+
+          echo "Get HeadBarnch"
           headBarnch= $(echo "${body}" | awk '{print $NF}')
+          
           echo $headBranch
           
           echo "Fetch Start"
