@@ -26,8 +26,8 @@ jobs:
           command=$(echo "${body}" | sed 's@/@@')
           echo $command
 
-          echo "Get HeadBarnch"
-          headBarnch= $(echo "${body}" | awk '{print $NF}')
+          echo "Get HeadBranch"
+          headBranch = $(echo "${body}" | awk '{print $NF}')
           
           echo $headBranch
           
@@ -36,6 +36,6 @@ jobs:
           echo "Rebase Start"
           git $command
           echo "Push Start"
-          git push ${headBarnch} --force
+          git push ${headBranch} --force
 
           
