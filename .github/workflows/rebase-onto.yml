@@ -6,28 +6,53 @@ on:
 
 jobs:
   rebase_and_force_push:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check if comment contains rebase onto command
-        uses: actions/github-script@v5
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const body = context.payload.comment.body;
-            const match = body.match(/\/rebase onto by (\w+)/);
-            if (match !== null) {
-              const branchName = match[1];
-              console.log('Branch name:', branchName);
-              return branchName;
-            }
-            return false;
+    if: github.event_name == 'issue_comment' && contains(github.event.comment.html_url, '/pull/') && startsWith(github.event.comment.body, '/rebase --onto ')
 
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
       - name: Rebase onto specified branch and force push
-        if: ${{ steps.check.outputs.branchName != '' }}
         run: |
+
+          git config --global user.name "githubactions"
+          git config --global user.email "githubactions@example.com"
+
+          body="${{ github.event.comment.body }}"
+          echo $body
+          echo "Get Command"
+          command=$(echo "${body}" | sed 's@/@@')
+          echo $command
+
+          IFS=' ' read -r -a array <<< "$command"
+
+          newBaseBranch=${array[2]}
+          echo $newBaseBranch
+          oldBaseBranch=${array[3]}
+          echo $oldBaseBranch
+          headBranch=${array[4]}
+          echo $headBranch
+          
+          echo "Fetch Start"
           git fetch origin
-          git rebase --onto ${{ github.event.issue.pull_request.base.ref }} ${{ steps.check.outputs.branchName }} ${{ github.event.issue.pull_request.head.ref }}
-          git push origin ${{ github.event.issue.pull_request.head.ref }} --force
+          
+          echo "checkout Start (init)"
+          git checkout ${oldBaseBranch}
+          git checkout ${newBaseBranch}
+          git checkout ${headBranch}
+
+          echo "Rebase Start git $command"
+          git $command
+          echo "Push Start"
+          git push --force origin ${headBranch}
+
+          curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments \
+              -d "{\"body\": \"Success git $command\"}"
