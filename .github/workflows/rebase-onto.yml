@@ -12,7 +12,9 @@ jobs:
         id: check
         run: |
           body="${{ github.event.comment.body }}"
-          branchName=$(echo "$body" | grep -oP '/rebase onto by \K\S+')
+          echo $body
+          branchName=$(echo "${body}" | sed 's@/rebase onto by @@')
+          echo $branchName
           if [ -n "$branchName" ]; then
             git ls-remote origin "$branchName" >/dev/null 2>&1
             if [ $? -eq 0 ]; then
