@@ -26,15 +26,23 @@ jobs:
           command=$(echo "${body}" | sed 's@/@@')
           echo $command
 
-          echo "Get HeadBranch"
-          headBranch=$(echo "${body}" | awk '{print $NF}')
-          
+          IFS=' ' read -r -a array <<< "$command"
+
+          newBaseBranch=${array[2]}
+          echo $newBaseBranch
+          oldBaseBranch=${array[3]}
+          echo $oldBaseBranch
+          headBranch=${array[4]}
           echo $headBranch
           
           echo "Fetch Start"
-          git fetch --all
-          echo "checkout Start"
+          git fetch origin
+          
+          echo "checkout Start (init)"
+          git checkout ${oldBaseBranch}
+          git checkout ${newBaseBranch}
           git checkout ${headBranch}
+
           echo "Rebase Start git $command"
           git $command
           echo "Push Start"
