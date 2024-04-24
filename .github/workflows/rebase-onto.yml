@@ -6,7 +6,7 @@ on:
 
 jobs:
   rebase_and_force_push:
-    if: github.event_name == 'issue_comment' && contains(github.event.comment.html_url, '/pull/') && startsWith(github.event.comment.body, '/rebase onto from ')
+    if: github.event_name == 'issue_comment' && contains(github.event.comment.html_url, '/pull/') && startsWith(github.event.comment.body, '/rebase --onto ')
 
     permissions:
       contents: write
@@ -18,47 +18,23 @@ jobs:
       - name: Check if comment contains rebase onto command
         id: check
         run: |
-          body="${{ github.event.comment.body }}"
-          echo $body
-          branchName=$(echo "${body}" | sed 's@/rebase onto from @@')
-          echo $branchName
-          PR=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" ${{ github.event.issue.pull_request.url }})
-          echo $PR
-          headBranchName = $(echo $PR | jq -r '.head.ref')
-          echo headBranchName
-          baseBranchName = $(echo $PR | jq -r '.base.ref')
-          echo baseBranchName
-
-          echo "branchName=$branchName" >> $GITHUB_OUTPUT
-          echo "headBranchName=$headBranchName" >> $GITHUB_OUTPUT
-          echo "baseBranchName=$baseBranchName" >> $GITHUB_OUTPUT
           
+
       - name: Checkout repository
-        if: ${{ steps.check.outputs.branchName != '' }}
         uses: actions/checkout@v2
 
       - name: Rebase onto specified branch and force push
-        if: ${{ steps.check.outputs.branchName != '' }}
         run: |
-          branchName=${{ steps.check.outputs.branchName }}
-          headBranchName=${{ steps.check.outputs.headBranchName }}
-          baseBranchName=${{ steps.check.outputs.baseBranchName }}
-          echo $branchName
-          echo $headBranchName
-          echo $baseBranchName
+          body="${{ github.event.comment.body }}"
+          command=$(echo "${body}" | sed 's@/@@')
+          headBarnch= $(echo "${body}" | awk '{print $NF}')
+          $headBranch
+          
+          echo "Fetch Start"
+          git fetch origin
+          echo "Rebase Start"
+          git $command
+          echo "Push Start"
+          git push ${headBarnch} --force
 
-          if [ -n "$branchName" ]; then
-            git ls-remote origin "$branchName" >/dev/null 2>&1
-            if [ $? -eq 0 ]; then
-              echo "Fetch Start"
-              git fetch origin
-              echo "Rebase Start"
-              git rebase --onto ${baseBranchName} ${branchName} ${headBranchName}
-              echo "Push Start"
-              git push ${headBranchName} --force
-            else
-              echo "Branch $branchName does not exist."
-              exit 1
-            fi
-          fi
           
