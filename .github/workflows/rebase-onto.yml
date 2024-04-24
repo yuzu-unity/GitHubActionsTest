@@ -21,7 +21,9 @@ jobs:
           branchName=$(echo "${body}" | sed 's@/rebase onto by @@')
           echo $branchName
           echo "::set-output name=branchName::$branchName"
-          
+          PR=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" ${{ github.event.issue.pull_request.url }})
+          echo "::set-output name=headBranchName::$(echo $PR | jq -r '.head.ref')"
+          echo "::set-output name=baseBranchName::$(echo $PR | jq -r '.base.ref')"
 
       - name: Checkout repository
         if: ${{ steps.check.outputs.branchName != '' }}
@@ -31,21 +33,21 @@ jobs:
         if: ${{ steps.check.outputs.branchName != '' }}
         run: |
           branchName=${{ steps.check.outputs.branchName }}
+          headBranchName=${{ steps.check.outputs.headBranchName }}
+          baseBranchName=${{ steps.check.outputs.baseBranchName }}
           echo $branchName
+          echo $headBranchName
+          echo $baseBranchName
+
           if [ -n "$branchName" ]; then
             git ls-remote origin "$branchName" >/dev/null 2>&1
             if [ $? -eq 0 ]; then
-              base=${{ github.head_ref }}
-              echo $base
-              head=${{ github.base_ref }}
-              echo $head
-
               echo "Fetch Start"
               git fetch origin
               echo "Rebase Start"
-              git rebase --onto ${base} ${branchName} ${head}
+              git rebase --onto ${baseBranchName} ${branchName} ${headBranchName}
               echo "Push Start"
-              git push ${head} --force
+              git push ${headBranchName} --force
             else
               echo "Branch $branchName does not exist."
               exit 1
