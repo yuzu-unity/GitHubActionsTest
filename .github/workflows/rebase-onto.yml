@@ -7,6 +7,9 @@ on:
 jobs:
   rebase_and_force_push:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
     steps:
       - name: Check if comment contains rebase onto command
         id: check
