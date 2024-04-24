@@ -10,20 +10,21 @@ jobs:
     steps:
       - name: Check if comment contains rebase onto command
         id: check
-        uses: actions/github-script@v5
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const body = context.payload.comment.body;
-            const match = body.match(/\/rebase onto by (\S+)/);
-            if (match !== null) {
-              const branchName = match[1];
-              echo "::set-output name=branchName::$(echo $branchName)"
-              return branchName;
-            }
-            return false;
+        run: |
+          body=$(jq -r '.comment.body' "$GITHUB_EVENT_PATH")
+          branchName=$(echo "$body" | grep -oP '/rebase onto by \K\S+')
+          if [ -n "$branchName" ]; then
+            git ls-remote origin "$branchName" >/dev/null 2>&1
+            if [ $? -eq 0 ]; then
+              echo "::set-output name=branchName::$branchName"
+            else
+              echo "Branch $branchName does not exist."
+              exit 1
+            fi
+          fi
 
       - name: Checkout repository
+        if: ${{ steps.check.outputs.branchName != '' }}
         uses: actions/checkout@v2
 
       - name: Rebase onto specified branch and force push
