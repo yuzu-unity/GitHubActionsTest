@@ -1,0 +1,33 @@
+name: Rebase and Force Push PR
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  rebase_and_force_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if comment contains rebase onto command
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = context.payload.comment.body;
+            const match = body.match(/\/rebase onto by (\w+)/);
+            if (match !== null) {
+              const branchName = match[1];
+              console.log('Branch name:', branchName);
+              return branchName;
+            }
+            return false;
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Rebase onto specified branch and force push
+        if: ${{ steps.check.outputs.branchName != '' }}
+        run: |
+          git fetch origin
+          git rebase --onto ${{ github.event.issue.pull_request.base.ref }} ${{ steps.check.outputs.branchName }} ${{ github.event.issue.pull_request.head.ref }}
+          git push origin ${{ github.event.issue.pull_request.head.ref }} --force

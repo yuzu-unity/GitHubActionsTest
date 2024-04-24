@@ -1,0 +1,65 @@
+name: auto-create-PR
+
+on:
+  push:
+    branches:
+      - 'release/*'
+
+jobs:
+  auto_merge:
+    runs-on: JenkinsPC
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    steps:
+    - name: Crate from Release into main
+      run: |
+        BRANCH=$(echo "${{ github.ref }}" | sed 's@refs/heads/@@')
+        PR_COUNT=$(gh pr list --state=open --base=main --head=${BRANCH} | wc -l)
+        echo "Number of PRs from ${BRANCH} to main: $PR_COUNT"
+        if [ $PR_COUNT -gt 0 ]; then
+          echo "There is at least one PR from ${BRANCH} to main."
+        else
+          echo "There are no PRs from ${BRANCH} to main."
+          gh pr create --title "[AUTO]Merge changes from ${BRANCH} into main" --body "This PR was automatically created by GitHub Actions." --base main --head ${BRANCH}
+          echo Created PR
+        fi
+
+    - name: Crate from Release into Release/NextRelease
+      run: |
+
+        BRANCH=$(echo "${{ github.ref }}" | sed 's@refs/heads/@@')
+        target_version=$(echo "$BRANCH" | sed 's/release\///')
+
+        echo "Branches newer than $target_version:"
+        git branch -r --list "origin/release/*" | while read -r branch; do
+            branch_name=$(echo "$branch" | sed 's/origin\///')
+            version=$(echo "$branch_name" | sed 's/release\///')
+            
+            version1=${target_version}
+            version2=${version}
+            IFS='.' read -ra v1_parts <<< "$version1"
+            IFS='.' read -ra v2_parts <<< "$version2"
+
+            for i in {0..2}; do
+              if ((v1_parts[$i] < v2_parts[$i])); then
+              echo "$version1 is less than $version2"
+              echo "$branch_name"
+                PR_COUNT=$(gh pr list --state=open --base=$branch_name --head=${BRANCH} | wc -l)
+                echo "Number of PRs from ${BRANCH} to $branch_name: $PR_COUNT"
+                if [ $PR_COUNT -gt 0 ]; then
+                  echo "There is at least one PR from ${BRANCH} to $branch_name."
+                else
+                  echo "There are no PRs from ${BRANCH} to $branch_name."
+                  gh pr create --title "[AUTO]Merge changes from ${BRANCH} into $branch_name" --body "This PR was automatically created by GitHub Actions." --base $branch_name --head ${BRANCH}
+                  echo Created PR
+                fi
+              fi
+            done
+        done
+
+
+
+      
+
+  
