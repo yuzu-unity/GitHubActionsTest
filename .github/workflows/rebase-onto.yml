@@ -50,6 +50,6 @@ jobs:
           echo "Rebase Start git $command"
           git $command
           echo "Push Start"
-          git push ${headBranch} --force
+          git push --force origin ${headBranch}
 
           
