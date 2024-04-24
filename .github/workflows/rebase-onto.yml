@@ -32,10 +32,10 @@ jobs:
           echo $headBranch
           
           echo "Fetch Start"
-          git fetch origin
+          git fetch --all
           echo "checkout Start"
           git checkout ${headBranch}
-          echo "Rebase Start"
+          echo "Rebase Start git $command"
           git $command
           echo "Push Start"
           git push ${headBranch} --force
