@@ -9,7 +9,7 @@ jobs:
     if: github.event_name == 'issue_comment' && contains(github.event.comment.html_url, '/pull/') && startsWith(github.event.comment.body, '/rebase --onto ')
 
     permissions:
-      contents: write
+      contents: write-all
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
