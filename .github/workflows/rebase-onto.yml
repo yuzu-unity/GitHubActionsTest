@@ -19,6 +19,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Rebase onto specified branch and force push
+        id: rebase
         run: |
 
           git config --global user.name "githubactions"
@@ -52,3 +53,18 @@ jobs:
           echo "Push Start"
           git push --force origin ${headBranch}
           echo "Success!!"
+          
+      - name: SuccessComment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          echo "Rebase Success" | gh issue comment ${GITHUB_ISSUE_NUMBER}
+          
+      - name: FailedComment
+        if: failure() && steps.rebase.outcome == 'failure'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          echo "Rebase Failed" | gh issue comment ${GITHUB_ISSUE_NUMBER}
