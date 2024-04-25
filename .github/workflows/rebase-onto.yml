@@ -53,18 +53,32 @@ jobs:
           echo "Push Start"
           git push --force origin ${headBranch}
           echo "Success!!"
-          
+
       - name: SuccessComment
+        uses: actions/github-script@v3
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_ISSUE_NUMBER: ${{ github.event.issue.number }}
-        run: |
-          echo "Rebase Success" | gh issue comment ${GITHUB_ISSUE_NUMBER}
+         MESSAGE: Rebase Success ${{ github.event.comment.body }}
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: process.env.MESSAGE
+            })
           
       - name: FailedComment
         if: failure() && steps.rebase.outcome == 'failure'
+        uses: actions/github-script@v3
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_ISSUE_NUMBER: ${{ github.event.issue.number }}
-        run: |
-          echo "Rebase Failed" | gh issue comment ${GITHUB_ISSUE_NUMBER}
+         MESSAGE: Rebase Failed ${{ github.event.comment.body }}
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: process.env.MESSAGE
+            })
