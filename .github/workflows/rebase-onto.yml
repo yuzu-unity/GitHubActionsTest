@@ -56,7 +56,7 @@ jobs:
       - name: SuccessComment
         uses: actions/github-script@v3
         env:
-         MESSAGE: Rebase Success ${{ github.event.comment.body }}
+         MESSAGE: Rebase Success!! ${{ github.event.comment.body }}
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -71,7 +71,7 @@ jobs:
         if: failure() && steps.rebase.outcome == 'failure'
         uses: actions/github-script@v3
         env:
-         MESSAGE: Rebase Failed ${{ github.event.comment.body }}
+         MESSAGE: Rebase Failed... ${{ github.event.comment.body }}
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
