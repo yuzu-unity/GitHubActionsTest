@@ -21,7 +21,7 @@ jobs:
         target_version=$(echo "$BRANCH" | sed 's/release\///')
 
         echo "Branches newer than $target_version:"
-        gh repo view AnotherBall/izumo-streaming-app --json refs --jq '.refs[] | select(.name | startswith("refs/heads/release/")) | .name | sub("refs/heads/"; "")' | while read -r branch; do
+        gh api -X GET "repos/${{ github.repository }}/git/matching-refs/heads/release/" --jq '.[].ref | sub("refs/heads/"; "")' | while read -r branch; do
             branch_name=$(echo "$branch" | sed 's/origin\///')
             version=$(echo "$branch_name" | sed 's/release\///')
             
