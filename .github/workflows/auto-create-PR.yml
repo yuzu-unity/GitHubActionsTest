@@ -13,20 +13,6 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
     steps:
-    - name: Crate from Release into main
-      if: always()
-      run: |
-        BRANCH=$(echo "${{ github.ref }}" | sed 's@refs/heads/@@')
-        PR_COUNT=$(gh pr list --state=open --base=main --head=${BRANCH} --limit 99999 | wc -l)
-        echo "Number of PRs from ${BRANCH} to main: $PR_COUNT"
-        if [ $PR_COUNT -gt 0 ]; then
-          echo "There is at least one PR from ${BRANCH} to main."
-        else
-          echo "There are no PRs from ${BRANCH} to main."
-          gh pr create --title "[AUTO]Merge changes from ${BRANCH} into main" --body "This PR was automatically created by GitHub Actions." --base main --head ${BRANCH}
-          echo Created PR
-        fi
-
     - name: Crate from Release into Release/NextRelease
       if: always()
       run: |
